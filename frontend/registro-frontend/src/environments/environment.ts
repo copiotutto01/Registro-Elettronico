@@ -1,10 +1,10 @@
 export const environment = {
   production: false,
   keycloak: {
-    url: 'https://expert-disco-v6x6wrjvpp992x54r-8080.app.github.dev',
-    realm: 'Registro',
+    url: 'https://stunning-disco-pjx7wv4jg9gr26pvv-8080.app.github.dev',
+    realm: 'Registo',
     clientId: 'frontend',
     redirectUri: window.location.origin,
   },
-  apiUrl: 'https://expert-disco-v6x6wrjvpp992x54r-5001.app.github.dev',
+  apiUrl: 'https://stunning-disco-pjx7wv4jg9gr26pvv-5001.app.github.dev',
 };

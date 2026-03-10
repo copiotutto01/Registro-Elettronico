@@ -12,6 +12,25 @@ import { Router } from '@angular/router';
   styleUrl: './studente.css',
 })
 export class StudenteComponent {
+    getAverageBySubject(): { [subject: string]: number } {
+      const subjectMap: { [subject: string]: { sum: number; count: number } } = {};
+      for (const v of this.votes) {
+        if (!subjectMap[v.subject]) {
+          subjectMap[v.subject] = { sum: 0, count: 0 };
+        }
+        subjectMap[v.subject].sum += v.vote;
+        subjectMap[v.subject].count += 1;
+      }
+      const result: { [subject: string]: number } = {};
+      for (const subject in subjectMap) {
+        result[subject] = Math.round((subjectMap[subject].sum / subjectMap[subject].count) * 100) / 100;
+      }
+      return result;
+    }
+
+    getAverageBySubjectKeys(): string[] {
+      return Object.keys(this.getAverageBySubject());
+    }
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private router = inject(Router);

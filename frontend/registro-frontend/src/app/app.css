@@ -107,6 +107,7 @@ body {
 }
 
 @keyframes pulse {
+@keyframes pulse {
   0%, 100% {
     opacity: 0.5;
     transform: scale(1);
@@ -116,15 +117,17 @@ body {
     transform: scale(1.05);
   }
 }
-  0% { 
+
+@keyframes pulse2 {
+  0% {
     opacity: 0.5;
     transform: scale(1);
   }
-  50% { 
+  50% {
     opacity: 1;
     transform: scale(1.1);
   }
-  100% { 
+  100% {
     opacity: 0.5;
     transform: scale(1);
   }

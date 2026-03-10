@@ -17,18 +17,16 @@ export class App implements OnInit {
   private router = inject(Router);
 
   ngOnInit() {
-    console.log('🚀 App initialized');
-    console.log('Auth service ready:', !!this.auth);
-
-    // Mostra caricamento per 2 secondi per permettere a Keycloak di inizializzarsi
     setTimeout(() => {
       this.isLoading.set(false);
-      console.log('✅ App loaded - isLoading=false');
-      console.log('User authenticated:', this.auth.isLoggedIn());
       if (this.auth.isLoggedIn()) {
-        console.log('Username:', this.auth.getUsername());
+        if (this.auth.hasRole('docente')) {
+          this.router.navigate(['/docente']);
+        } else if (this.auth.hasRole('studente')) {
+          this.router.navigate(['/studente']);
+        }
       }
-    }, 2000);
+    }, 1000);
   }
 
   login() {

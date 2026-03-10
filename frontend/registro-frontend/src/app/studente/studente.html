@@ -1,6 +1,7 @@
 <div class="studente-container">
   <div class="header-section">
     <h2>📕 I Miei Voti</h2>
+
     <div class="header-actions">
       <button (click)="retryLoad()" class="btn btn-secondary" [disabled]="loading()">
         🔄 Ricarica
@@ -45,6 +46,15 @@
         <span class="stat-value">{{ calculateAverage() }}</span>
       </div>
     </div>
+    <div class="subject-averages" *ngIf="votes.length > 0">
+      <h4 style="margin-top:1.5rem; color:#667eea;">Media per materia</h4>
+      <ul style="list-style:none; padding:0;">
+        <li *ngFor="let subject of getAverageBySubjectKeys()">
+          <span style="font-weight:600;">{{ subject }}:</span>
+          <span style="color:#333;">{{ getAverageBySubject()[subject] }}</span>
+        </li>
+      </ul>
+    </div>
 
     <div class="votes-grid">
       <div *ngFor="let v of votes" class="vote-card">
@@ -63,6 +73,10 @@
           <span [class]="v.vote >= 6 ? 'status-good' : v.vote >= 4 ? 'status-medium' : 'status-low'">
             {{ v.vote >= 6 ? 'Ottimo' : v.vote >= 4 ? 'Buono' : 'Da migliorare' }}
           </span>
+        </div>
+        <div class="vote-note" *ngIf="v.note && v.note.length > 0">
+          <span class="note-label">Nota docente:</span>
+          <span class="note-content">{{ v.note }}</span>
         </div>
       </div>
     </div>

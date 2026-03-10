@@ -1,20 +1,47 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from keycloak import KeycloakOpenID
+import requests
+from jose import jwt
+from jose.exceptions import JWTError
+import base64
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.backends import default_backend
 from db_wrapper import DatabaseWrapper
 from functools import wraps
 
 app = Flask(__name__)
 CORS(app)
 
-# Keycloak configuration
-keycloak_openid = KeycloakOpenID(
-    server_url="https://expert-disco-v6x6wrjvpp992x54r-8080.app.github.dev",
-    client_id="frontend",
-    realm_name="Registro",
-)
+
+# Keycloak config
+KEYCLOAK_URL = "https://stunning-disco-pjx7wv4jg9gr26pvv-8080.app.github.dev"
+KEYCLOAK_REALM = "Registo"
+KEYCLOAK_CLIENT_ID = "frontend"
+
+# Scarica la chiave pubblica del realm
+
+def get_keycloak_jwks():
+    url = f"{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/certs"
+    resp = requests.get(url)
+    resp.raise_for_status()
+    return resp.json()
+
+def jwk_to_pem(jwk):
+    # Solo per chiavi RSA
+    n = int.from_bytes(base64.urlsafe_b64decode(jwk['n'] + '=='), 'big')
+    e = int.from_bytes(base64.urlsafe_b64decode(jwk['e'] + '=='), 'big')
+    pubkey = rsa.RSAPublicNumbers(e, n).public_key(default_backend())
+    pem = pubkey.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    return pem
+
+JWKS = get_keycloak_jwks()
 
 db = DatabaseWrapper()
+
 
 def token_required(f):
     @wraps(f)
@@ -24,10 +51,29 @@ def token_required(f):
             return jsonify({'message': 'Token is missing'}), 401
         try:
             token = token.split(" ")[1]  # Bearer token
-            token_info = keycloak_openid.introspect(token)
-            if not token_info['active']:
-                return jsonify({'message': 'Token is invalid'}), 401
-            request.user = token_info
+            # Verifica JWT con le chiavi pubbliche del realm
+            unverified_header = jwt.get_unverified_header(token)
+            kid = unverified_header['kid']
+            key = None
+            alg = None
+            for jwk in JWKS['keys']:
+                if jwk['kid'] == kid:
+                    key = jwk_to_pem(jwk)
+                    alg = jwk['alg']
+                    break
+            if not key:
+                return jsonify({'message': 'Public key not found for token'}), 401
+            payload = jwt.decode(
+                token,
+                key,
+                algorithms=[alg],
+                audience=KEYCLOAK_CLIENT_ID,
+                options={"verify_aud": True, "verify_exp": True}
+            )
+            request.user = payload
+        except JWTError as e:
+            print(f"Token validation error: {e}")
+            return jsonify({'message': 'Token is invalid', 'error': str(e)}), 401
         except Exception as e:
             print(f"Token validation error: {e}")
             return jsonify({'message': 'Token is invalid', 'error': str(e)}), 401
@@ -61,7 +107,8 @@ def insert_vote():
         if not student_name or not subject or vote is None:
             return jsonify({'message': 'Missing required fields'}), 400
         
-        db.insert_vote(student_name, subject, vote)
+        note = data.get('note')
+        db.insert_vote(student_name, subject, vote, note)
         return jsonify({'message': 'Vote inserted successfully'}), 201
     except Exception as e:
         print(f"Error inserting vote: {e}")

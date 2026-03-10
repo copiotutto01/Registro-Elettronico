@@ -22,9 +22,11 @@ export class DocenteComponent {
   studentName = '';
   subject = '';
   vote = 0;
+
   votes: any[] = [];
   subjects: string[] = [];
   students: string[] = [];
+  note: string = '';
   loading = signal(false);
   error = signal('');
   successMessage = signal('');
@@ -63,6 +65,7 @@ export class DocenteComponent {
     });
   }
 
+
   insertVote() {
     if (!this.studentName.trim() || !this.subject.trim() || !this.vote) {
       this.error.set('Per favore, compila tutti i campi obbligatori');
@@ -92,6 +95,7 @@ export class DocenteComponent {
       student_name: this.studentName.trim(),
       subject: this.subject.trim(),
       vote: this.vote,
+      note: this.note && this.note.trim() ? this.note.trim() : undefined,
     };
 
     this.http.post(`${this.apiUrl}/votes`, data).subscribe({
@@ -173,6 +177,7 @@ export class DocenteComponent {
     this.studentName = '';
     this.subject = '';
     this.vote = 0;
+    this.note = '';
   }
 
   retryLoad() {

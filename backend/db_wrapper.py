@@ -25,15 +25,15 @@ class DatabaseWrapper:
             print(f"Database connection error: {e}")
             raise
 
-    def insert_vote(self, student_name, subject, vote):
+    def insert_vote(self, student_name, subject, vote, note=None):
         try:
             if not self.connection or not self.connection.open:
                 self.connect()
             with self.connection.cursor() as cursor:
-                sql = "INSERT INTO votes (student_name, subject, vote) VALUES (%s, %s, %s)"
-                cursor.execute(sql, (student_name, subject, vote))
+                sql = "INSERT INTO votes (student_name, subject, vote, note) VALUES (%s, %s, %s, %s)"
+                cursor.execute(sql, (student_name, subject, vote, note))
             self.connection.commit()
-            print(f"Vote inserted for {student_name} in {subject}: {vote}")
+            print(f"Vote inserted for {student_name} in {subject}: {vote} (note: {note})")
         except pymysql.Error as e:
             print(f"Error inserting vote: {e}")
             raise
@@ -43,7 +43,7 @@ class DatabaseWrapper:
             if not self.connection or not self.connection.open:
                 self.connect()
             with self.connection.cursor() as cursor:
-                sql = "SELECT id, student_name, subject, vote FROM votes ORDER BY id DESC"
+                sql = "SELECT id, student_name, subject, vote, note FROM votes ORDER BY id DESC"
                 cursor.execute(sql)
                 result = cursor.fetchall()
             return result if result else []
@@ -56,7 +56,7 @@ class DatabaseWrapper:
             if not self.connection or not self.connection.open:
                 self.connect()
             with self.connection.cursor() as cursor:
-                sql = "SELECT id, subject, vote FROM votes WHERE student_name = %s ORDER BY id DESC"
+                sql = "SELECT id, subject, vote, note FROM votes WHERE student_name = %s ORDER BY id DESC"
                 cursor.execute(sql, (student_name,))
                 result = cursor.fetchall()
             return result if result else []
