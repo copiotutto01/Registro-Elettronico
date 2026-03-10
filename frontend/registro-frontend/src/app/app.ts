@@ -24,6 +24,8 @@ export class App implements OnInit {
           this.router.navigate(['/docente']);
         } else if (this.auth.hasRole('studente')) {
           this.router.navigate(['/studente']);
+        } else {
+          this.router.navigate(['/accesso-negato']);
         }
       }
     }, 1000);

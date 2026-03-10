@@ -45,6 +45,17 @@ export const appConfig: ApplicationConfig = {
           console.log('Ruoli:', keycloak.tokenParsed?.['realm_access']?.roles);
         }
 
+        // Aggiorna il token ogni 30 secondi se necessario
+        setInterval(() => {
+          keycloak.updateToken(10).then(refreshed => {
+            if (refreshed) {
+              console.log('🔄 Token Keycloak aggiornato');
+            }
+          }).catch(() => {
+            console.warn('❌ Token Keycloak non aggiornato, logout');
+            keycloak.logout();
+          });
+        }, 10000);
         return result;
       } catch (error) {
         console.error('❌ Errore Keycloak:', error);

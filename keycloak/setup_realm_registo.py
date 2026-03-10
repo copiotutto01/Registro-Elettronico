@@ -1,11 +1,11 @@
 import requests
 
-KEYCLOAK_URL = "https://stunning-disco-pjx7wv4jg9gr26pvv-8080.app.github.dev"
+KEYCLOAK_URL = "http://localhost:8080"
 ADMIN_USER = "admin"
 ADMIN_PASS = "admin"
 REALM_NAME = "Registo"
 CLIENT_ID = "frontend"
-REDIRECT_URI = "https://stunning-disco-pjx7wv4jg9gr26pvv-4200.app.github.dev/*"
+REDIRECT_URI = "http://localhost:4200/*"
 
 USERS = [
     {"username": "docente", "password": "docente", "roles": ["docente"]},

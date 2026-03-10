@@ -15,7 +15,7 @@ CORS(app)
 
 
 # Keycloak config
-KEYCLOAK_URL = "https://stunning-disco-pjx7wv4jg9gr26pvv-8080.app.github.dev"
+KEYCLOAK_URL = "https://legendary-xylophone-r4j7wpjp979w3x4q4-8080.app.github.dev"
 KEYCLOAK_REALM = "Registo"
 KEYCLOAK_CLIENT_ID = "frontend"
 
@@ -46,36 +46,50 @@ db = DatabaseWrapper()
 def token_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        token = request.headers.get('Authorization')
-        if not token:
+        token_header = request.headers.get('Authorization')
+        print("[DEBUG] Authorization header:", token_header)
+        if not token_header:
+            print("[DEBUG] Token is missing in header")
             return jsonify({'message': 'Token is missing'}), 401
         try:
-            token = token.split(" ")[1]  # Bearer token
-            # Verifica JWT con le chiavi pubbliche del realm
+            token_parts = token_header.split(" ")
+            if len(token_parts) != 2 or token_parts[0] != "Bearer":
+                print("[DEBUG] Authorization header malformato:", token_header)
+                return jsonify({'message': 'Malformed Authorization header'}), 401
+            token = token_parts[1]
+            print("[DEBUG] JWT token:", token)
+            jwks = get_keycloak_jwks()
             unverified_header = jwt.get_unverified_header(token)
-            kid = unverified_header['kid']
+            print("[DEBUG] JWT header:", unverified_header)
+            kid = unverified_header.get('kid')
             key = None
             alg = None
-            for jwk in JWKS['keys']:
+            for jwk in jwks['keys']:
                 if jwk['kid'] == kid:
                     key = jwk_to_pem(jwk)
                     alg = jwk['alg']
                     break
             if not key:
+                print("[DEBUG] Public key not found for token (kid):", kid)
                 return jsonify({'message': 'Public key not found for token'}), 401
-            payload = jwt.decode(
-                token,
-                key,
-                algorithms=[alg],
-                audience=KEYCLOAK_CLIENT_ID,
-                options={"verify_aud": True, "verify_exp": True}
-            )
-            request.user = payload
+            try:
+                payload = jwt.decode(
+                    token,
+                    key,
+                    algorithms=[alg],
+                    audience=KEYCLOAK_CLIENT_ID,
+                    options={"verify_aud": True, "verify_exp": True}
+                )
+                print("[DEBUG] Token payload:", payload)
+                request.user = payload
+            except Exception as decode_error:
+                print(f"[DEBUG] Token decode error: {decode_error}")
+                return jsonify({'message': 'Token is invalid', 'error': str(decode_error)}), 401
         except JWTError as e:
-            print(f"Token validation error: {e}")
+            print(f"[DEBUG] JWTError: {e}")
             return jsonify({'message': 'Token is invalid', 'error': str(e)}), 401
         except Exception as e:
-            print(f"Token validation error: {e}")
+            print(f"[DEBUG] Generic token validation error: {e}")
             return jsonify({'message': 'Token is invalid', 'error': str(e)}), 401
         return f(*args, **kwargs)
     return decorated_function
@@ -161,4 +175,4 @@ def get_students():
         return jsonify({'message': 'Error fetching students', 'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5002, debug=True)
