@@ -1,0 +1,70 @@
+<div class="studente-container">
+  <div class="header-section">
+    <h2>📕 I Miei Voti</h2>
+    <div class="header-actions">
+      <button (click)="retryLoad()" class="btn btn-secondary" [disabled]="loading()">
+        🔄 Ricarica
+      </button>
+      <button (click)="logout()" class="btn btn-logout">
+        🚪 Logout
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="error()" class="alert alert-error">
+    <div class="error-content">
+      <span class="error-icon">⚠️</span>
+      <span class="error-message">{{ error() }}</span>
+      <button *ngIf="!loading()" (click)="retryLoad()" class="btn btn-retry">
+        Riprova
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Caricamento voti in corso...</p>
+  </div>
+
+  <div *ngIf="!loading() && !error() && votes.length === 0" class="no-votes">
+    <div class="no-votes-content">
+      <span class="no-votes-icon">📝</span>
+      <h3>Nessun voto registrato</h3>
+      <p>Non hai ancora ricevuto alcun voto. Contatta il tuo docente per eventuali aggiornamenti.</p>
+    </div>
+  </div>
+
+  <div *ngIf="!loading() && !error() && votes.length > 0" class="votes-container">
+    <div class="stats">
+      <div class="stat-card">
+        <span class="stat-label">Numero Voti</span>
+        <span class="stat-value">{{ votes.length }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Media Voti</span>
+        <span class="stat-value">{{ calculateAverage() }}</span>
+      </div>
+    </div>
+
+    <div class="votes-grid">
+      <div *ngFor="let v of votes" class="vote-card">
+        <div class="vote-header">
+          <div class="vote-subject">{{ v.subject }}</div>
+          <div class="vote-score">{{ v.vote }}/10</div>
+        </div>
+        <div class="vote-bar">
+          <div
+            class="vote-bar-fill"
+            [style.width.%]="(v.vote / 10) * 100"
+            [class]="v.vote >= 6 ? 'good' : v.vote >= 4 ? 'medium' : 'low'"
+          ></div>
+        </div>
+        <div class="vote-status">
+          <span [class]="v.vote >= 6 ? 'status-good' : v.vote >= 4 ? 'status-medium' : 'status-low'">
+            {{ v.vote >= 6 ? 'Ottimo' : v.vote >= 4 ? 'Buono' : 'Da migliorare' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

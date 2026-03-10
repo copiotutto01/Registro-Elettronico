@@ -1,0 +1,130 @@
+<div class="docente-container">
+  <h2>📚 Gestione Voti - Docente</h2>
+
+  <div *ngIf="error()" class="alert alert-error">
+    <div class="alert-content">
+      <span class="alert-icon">⚠️</span>
+      <span>{{ error() }}</span>
+      <button *ngIf="error().includes('Impossibile caricare') || error().includes('Errore nel caricamento')" (click)="retryLoad()" class="btn-retry">
+        🔄 Riprova
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="successMessage()" class="alert alert-success">
+    <div class="alert-content">
+      <span class="alert-icon">✅</span>
+      <span>{{ successMessage() }}</span>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>📝 Inserisci un nuovo voto</h3>
+    <form (ngSubmit)="insertVote()" class="vote-form">
+      <div class="form-group">
+        <label for="studentName">Nome Studente:</label>
+        <input
+          type="text"
+          id="studentName"
+          [(ngModel)]="studentName"
+          name="studentName"
+          required
+          placeholder="Es. Mario Rossi"
+          class="form-input"
+          list="students-list"
+        />
+        <datalist id="students-list">
+          <option *ngFor="let stud of students" [value]="stud">
+        </datalist>
+      </div>
+
+      <div class="form-group">
+        <label for="subject">Materia:</label>
+        <input
+          type="text"
+          id="subject"
+          [(ngModel)]="subject"
+          name="subject"
+          required
+          placeholder="Es. Matematica"
+          class="form-input"
+          list="subjects-list"
+        />
+        <datalist id="subjects-list">
+          <option *ngFor="let subj of subjects" [value]="subj">
+        </datalist>
+      </div>
+
+      <div class="form-group">
+        <label for="vote">Voto (0-10):</label>
+        <input
+          type="number"
+          id="vote"
+          [(ngModel)]="vote"
+          name="vote"
+          min="0"
+          max="10"
+          step="0.5"
+          required
+          placeholder="Es. 8.5"
+          class="form-input"
+        />
+      </div>
+
+      <button type="submit" [disabled]="loading()" class="btn btn-primary">
+        <span *ngIf="loading()" class="spinner"></span>
+        {{ loading() ? 'Inserimento in corso...' : '📤 Inserisci Voto' }}
+      </button>
+    </form>
+  </div>
+
+  <div class="votes-section">
+    <h3>📊 Tutti i Voti</h3>
+    <div *ngIf="loading() && votes.length === 0" class="loading-container">
+      <div class="spinner-large"></div>
+      <p>Caricamento voti in corso...</p>
+    </div>
+    <div *ngIf="votes.length === 0 && !loading()" class="no-votes">
+      <div class="no-data-icon">📭</div>
+      <p>Nessun voto inserito ancora.</p>
+      <small>Inserisci il primo voto utilizzando il form sopra.</small>
+    </div>
+    <div *ngIf="votes.length > 0" class="votes-table-container">
+      <div class="table-header">
+        <span class="table-title">Elenco completo dei voti ({{ votes.length }})</span>
+        <button (click)="loadVotes()" [disabled]="loading()" class="btn-refresh">
+          <span *ngIf="loading()" class="spinner-small"></span>
+          {{ loading() ? 'Aggiornamento...' : '🔄 Aggiorna' }}
+        </button>
+      </div>
+      <div class="votes-table">
+        <table>
+          <thead>
+            <tr>
+              <th>👤 Studente</th>
+              <th>📚 Materia</th>
+              <th>🎯 Voto</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of votes" class="vote-row">
+              <td class="student-cell">{{ v.student_name }}</td>
+              <td class="subject-cell">{{ v.subject }}</td>
+              <td class="vote-cell">
+                <span class="vote-badge" [class]="'vote-' + getVoteClass(v.vote)">
+                  {{ v.vote }}/10
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-section">
+    <button (click)="logout()" class="btn btn-secondary">
+      🚪 Logout
+    </button>
+  </div>
+</div>
